@@ -1,0 +1,42 @@
+ena
+conf ter
+hostname C1
+ip routing
+
+int gi1/0/21
+no sw
+ip add 10.10.88.1 255.255.255.252
+no shu
+exit
+
+int gi1/0/22
+no sw
+ip add 11.11.88.2 255.255.255.252
+no shu
+exit
+
+int gi1/0/24
+no sw
+ip add 11.11.88.17 255.255.255.252
+no shu
+exit
+
+int gi1/0/23
+no sw
+ip add 11.11.88.13 255.255.255.252
+no shu
+exit
+
+int gi1/0/20
+no sw
+ip add 10.10.88.21 255.255.255.252
+no shu
+exit
+
+router eigrp 88
+network 10.10.88.0 0.0.0.3
+network 11.11.88.0 0.0.0.3
+network 11.11.88.16 0.0.0.3
+network 11.11.88.12 0.0.0.3
+network 10.10.88.20 0.0.0.3
+exit

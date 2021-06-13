@@ -1,0 +1,78 @@
+ena
+conf ter
+hostname R3-Active
+
+int gi0/2
+ip add 10.10.88.22 255.255.255.252
+no shu
+exit
+
+int gi0/1
+ip add 10.10.88.10 255.255.255.252
+no shu
+exit
+
+int gi0/0
+no shu
+exit
+
+int gi0/0.40
+encapsulation dot1Q 40
+ip add 192.168.5.2 255.255.255.0
+exit
+int gi0/0.99
+encapsulation dot1Q 99 native
+ip add 192.168.0.2 255.255.255.0
+exit
+
+ip dhcp excluded-address 192.168.5.1 192.168.5.4
+ip dhcp pool ACADEMIA-EUROPEA
+network 192.168.5.0 255.255.255.0
+default-router 192.168.5.1
+exit
+
+ip dhcp excluded-address 192.168.0.1 192.168.5.6
+ip dhcp pool Soporte
+network 192.168.0.0 255.255.255.0
+default-router 192.168.0.1
+exit
+
+router eigrp 88
+network 10.10.88.20 0.0.0.3
+network 10.10.88.8 0.0.0.3
+network 192.168.5.0 0.0.0.255
+network 192.168.0.0 0.0.0.255
+exit
+
+! HSRP
+int gi0/0.40
+standby 40 ip 192.168.5.1
+standby 40 preempt
+standby 40 priority 103
+exit
+
+int gi0/0.99
+standby 99 ip 192.168.0.1
+standby 99 preempt
+standby 99 priority 103
+exit
+
+! Modelo AAA Tacacs
+
+ip domain name davidsanchez.com
+ip ssh version 2
+crypto key generate rsa
+
+! lista remota
+aaa new-model 
+aaa authentication login TacacsList group tacacs+ local enable 
+aaa authentication enable default group tacacs+ local enable
+
+! Autentificacion el router
+tacacs-server host 192.168.0.5 key KeyR3
+
+! ssh
+username admin secret admin
+line vty 0 15
+transport input ssh
+login authentication TacacsList

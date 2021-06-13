@@ -1,0 +1,20 @@
+ena
+conf ter
+hostname ISP
+
+int gi0/2
+ip add 200.165.201.2 255.255.255.0
+no shu
+exit
+int gi0/1
+ip add 80.80.81.254 255.255.255.0
+no shu
+exit
+int gi0/0
+ip add 80.80.80.254 255.255.255.0
+no shu
+exit
+
+ip route 0.0.0.0 0.0.0.0 200.165.201.1
+
+

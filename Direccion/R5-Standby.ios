@@ -1,0 +1,153 @@
+ena
+conf ter
+hostname R5-standby
+ip routing
+spanning-tree mode rapid-pvst 
+
+vlan 20
+name Direccion
+exit
+vlan 30
+name Administracion
+exit
+vlan 40
+name ACADEMIA-EUROPEA
+exit
+vlan 99
+name Soporte
+exit
+
+
+
+int gi0/2
+no sw
+ip add 10.10.88.18 255.255.255.252
+no shu
+exit
+
+int vl 20
+ip add 172.168.2.3 255.255.255.0
+no shu
+exit
+
+int vl 30
+ip add 172.168.3.3 255.255.255.0
+no shu
+exit
+
+int vl 40
+ip add 172.168.4.3 255.255.255.0
+no shu
+exit
+
+int vl 99
+ip add 192.168.7.3 255.255.255.0
+no shu
+exit
+
+! HSRP
+int vl 20
+standby version 2
+standby 20 ip 172.168.2.1
+standby 20 preempt
+standby 20 priority 101
+
+int vl 30
+standby version 2
+standby 30 ip 172.168.3.1
+standby 30 preempt
+standby 30 priority 101
+
+int vl 40
+standby version 2
+standby 40 ip 172.168.4.1
+standby 40 preempt
+standby 40 priority 101
+
+int vl 99
+standby version 2
+standby 99 ip 192.168.7.1
+standby 99 preempt
+standby 99 priority 101
+
+! dhcp
+ip dhcp excluded-address 172.168.2.1 172.168.2.5
+ip dhcp pool Estudiantes
+network 172.168.2.0 255.255.255.0
+default-router 172.168.2.1
+exit
+
+ip dhcp excluded-address 172.168.3.1 172.168.3.5
+ip dhcp pool Docentes
+network 172.168.3.0 255.255.255.0
+default-router 172.168.3.1
+exit
+
+ip dhcp excluded-address 172.168.4.1 172.168.4.5
+ip dhcp pool ACADEMIA-EUROPEA
+network 172.168.4.0 255.255.255.0
+default-router 172.168.4.1
+exit
+
+ip dhcp excluded-address 192.168.7.1 192.168.7.5
+ip dhcp pool Soporte
+network 192.168.7.0 255.255.255.0
+default-router 192.168.7.1
+option 43 ip 192.168.7.5
+exit
+
+
+! Trunk
+int gi0/1
+switchport trunk encapsulation dot1q
+ip dhcp snooping trust
+ip arp inspection trust
+sw m t
+sw t all vl 20,30,40,99
+sw t n vl 99
+no shu
+exit
+
+int fa0/19
+switchport trunk encapsulation dot1q
+ip dhcp snooping trust
+ip arp inspection trust
+sw m t
+sw t all vl 20,30,40,99
+sw t n vl 99
+no shu
+exit
+
+int fa0/20
+switchport trunk encapsulation dot1q
+ip dhcp snooping trust
+ip arp inspection trust
+sw m t
+sw t all vl 20,30,40,99
+sw t n vl 99
+no shu
+exit
+
+
+router eigrp 88
+network 10.10.88.16 0.0.0.3
+network 172.168.2.0 0.0.0.255
+network 172.168.3.0 0.0.0.255
+network 172.168.4.0 0.0.0.255
+network 192.168.7.0 0.0.0.255
+exit
+
+! Balanceo de Cargas
+spanning-tree vlan 20 root secondary
+spanning-tree vlan 30 root secondary
+spanning-tree vlan 40 root secondary
+spanning-tree vlan 99 root secondary
+
+! Mitigacion ataque DHCP
+ip dhcp snooping
+
+! Mitigacion ataque ARP
+ip arp inspection vl 20
+ip arp inspection vl 30
+ip arp inspection vl 40
+ip arp inspection vl 99

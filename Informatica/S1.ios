@@ -1,0 +1,120 @@
+ena
+conf ter
+hostname S1
+spanning-tree mode rapid-pvst 
+
+vlan 20
+name Estudiantes
+exit
+vlan 30
+name Docentes
+exit
+vlan 40
+name ACADEMIA-EUROPEA
+exit
+vlan 99
+name Soporte
+exit
+
+! Trunk
+int r fa0/21-24
+sw m t
+sw t all vl 20,30,40,99
+sw t n vl 99
+ip dhcp snooping trust
+ip arp inspection trust
+no shu
+exit
+
+int gi0/1
+sw m t
+sw t all vl 20,30,40,99
+sw t n vl 99
+ip dhcp snooping trust
+ip arp inspection trust
+no shu
+exit
+
+int fa0/20
+sw m t
+sw t n vl 99
+ip dhcp snooping trust
+ip arp inspection trust
+no shu
+exit
+
+! Access
+int r fa0/1-16
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport port-security
+switchport port-security aging time 10
+switchport port-security mac-address sticky
+Switchport port-security maximum 6 
+switchport port-security violation shutdown
+ip dhcp snooping trust
+sw m acc 
+sw acc vl 20
+sw t n vl 99
+no shu
+exit
+
+int r fa0/17-18
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport port-security
+switchport port-security aging time 10
+switchport port-security mac-address sticky
+Switchport port-security maximum 6 
+switchport port-security violation shutdown
+ip dhcp snooping trust
+sw m acc 
+sw acc vl 30
+sw t n vl 99
+no shu
+exit
+
+int fa0/19
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport port-security
+switchport port-security aging time 10
+switchport port-security mac-address sticky
+Switchport port-security maximum 6 
+switchport port-security violation shutdown
+ip dhcp snooping trust
+sw m acc 
+sw acc vl 99
+sw t n vl 99
+no shu
+exit
+
+int gi0/2
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport port-security
+switchport port-security aging time 10
+switchport port-security mac-address sticky
+Switchport port-security maximum 6 
+switchport port-security violation shutdown
+ip dhcp snooping trust
+sw m acc 
+sw acc vl 99
+sw t n vl 99
+no shu
+exit
+
+! Balanceo de Cargas
+spanning-tree vlan 20 root Primary
+spanning-tree vlan 30 root Primary
+spanning-tree vlan 40 root secondary
+spanning-tree vlan 99 root secondary
+
+! Mitigacion ataque DHCP
+ip dhcp snooping
+
+! Mitigacion ataque ARP
+ip arp inspection vl 20
+ip arp inspection vl 30
+ip arp inspection vl 40
+ip arp inspection vl 99

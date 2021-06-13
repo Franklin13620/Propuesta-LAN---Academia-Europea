@@ -1,0 +1,123 @@
+ena
+conf ter
+hostname S7
+spanning-tree mode rapid-pvst 
+
+vlan 20
+name Direccion
+exit
+vlan 30
+name Administracion
+exit
+vlan 40
+name ACADEMIA-EUROPEA
+exit
+vlan 99
+name Soporte
+exit
+
+
+! Trunk
+int fa0/18
+ip dhcp snooping trust
+ip arp inspection trust
+sw m t
+sw t all vl 20,30,40,99
+sw t n vl 99
+no shu
+exit
+
+int fa0/20
+ip dhcp snooping trust
+ip arp inspection trust
+sw m t
+sw t all vl 20,30,40,99
+sw t n vl 99
+no shu
+exit
+
+int gi0/2
+ip dhcp snooping trust
+ip arp inspection trust
+sw trunk native vlan 99
+sw m t
+no shu
+exit
+
+! Access
+int r fa0/1-6
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport port-security
+switchport port-security aging time 10
+switchport port-security mac-address sticky
+Switchport port-security maximum 6 
+switchport port-security violation shutdown
+ip dhcp snooping trust
+sw m acc
+sw acc vl 20
+sw t n vl 99
+no shu
+exit
+
+int r fa0/7-12
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport port-security
+switchport port-security aging time 10
+switchport port-security mac-address sticky
+Switchport port-security maximum 6 
+switchport port-security violation shutdown
+ip dhcp snooping trust
+sw m acc
+sw acc vl 30
+sw t n vl 99
+no shu
+exit
+
+int r fa0/13-14
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport port-security
+switchport port-security aging time 10
+switchport port-security mac-address sticky
+Switchport port-security maximum 6 
+switchport port-security violation shutdown
+ip dhcp snooping trust
+sw m acc
+sw acc vl 99
+sw t n vl 99
+no shu
+exit
+
+! EtherChannel
+int r fa0/21-24
+sw nonegotiate 
+channel-protocol pagp
+channel-group 2 mode desirable
+exit
+
+int port2
+sw m t
+sw t all vl 20,30,40,99
+sw t n vl 99
+no shu
+ip dhcp snooping trust
+ip dhcp snooping trust
+exit
+
+! Balanceo de Cargas
+spanning-tree vlan 20 root Primary
+spanning-tree vlan 30 root Primary
+spanning-tree vlan 40 root secondary
+spanning-tree vlan 99 root secondary
+
+
+! Mitigacion ataque DHCP
+ip dhcp snooping
+
+! Mitigacion ataque ARP
+ip arp inspection vl 20
+ip arp inspection vl 30
+ip arp inspection vl 40
+ip arp inspection vl 99
