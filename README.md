@@ -1,2 +1,2 @@
-# Propuesta-LAN---Academia-Europea
+# Propuesta LAN Academia-Europea
 Academia Europea
